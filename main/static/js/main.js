@@ -217,7 +217,7 @@
 	------------------------------------------------------ */
 
 	/* local validation */
-	$('#contactForm').validate({
+	$('#contactFor').validate({
 
 		/* submit via ajax */
 		submitHandler: function(form) {
@@ -227,8 +227,13 @@
 			$.ajax({      	
 
 		      type: "POST",
-		      url: "ajax/response",
-		      data: $(form).serialize(),
+		      url: "ajax/response/",
+		      data: {name : $("#contactName").val(),
+			  		email : $("#contactEmail").val(),
+			 		 subject: $("#contactSubject").val(),
+			 		 message: $("#contactMessage").val(),
+			 		 csrfmiddlewaretoken: token,
+		  			},
 		      beforeSend: function() { 
 
 		      	sLoader.fadeIn(); 
@@ -286,6 +291,50 @@
 
 		}		
 
-	});		
+	});	
+
+	function create_post(){
+		console.log("working....")
+		console.log($('#contactName').val())
+		var sLoader = $('#submit-loader');
+		var token = $('input[name="csrfmiddlewaretoken').attr('value');
+		console.log(token)
+
+		$.ajax({
+			url: "ajax/response/",
+			type: "POST",
+			data: {name : $("#contactName").val(),
+					email : $("#contactEmail").val(),
+					subject: $("#contactSubject").val(),
+					message: $("#contactMessage").val(),
+					csrfmiddlewaretoken: token,
+				},
+			success : function(json) {
+				$('#contactName').val(''); // remove the value from the input
+				console.log(json); // log the returned json to the console
+				console.log("success"); // another sanity check
+				$('#message-warning').hide();
+				$('#contactForm').fadeOut();
+				$('#message-success').fadeIn();
+			},
+
+			error : function(xhr,errmsg,err) {
+				$('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+
+					" <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
+				console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+				sLoader.fadeOut(); 
+				$('#message-warning').html("Something went wrong. Please try again.");
+			    $('#message-warning').fadeIn();
+
+			}
+
+		});
+	};
+	
+	$('#contactForm').on('submit', function(event){
+		event.preventDefault();
+		console.log("form submitted!")  // sanity check
+		create_post();
+	});
 
 })(jQuery);
